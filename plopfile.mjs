@@ -22,9 +22,23 @@ export default function (plop) {
         ],
       },
       {
+        type: 'list',
+        name: 'framework',
+        when: (options) => options.exampleScopeFolder === 'edge-functions',
+        message: 'What framework should the edge function use? ',
+        choices: [
+          { name: 'Next.js', value: 'nextjs' },
+          { name: "Vercel's File System API", value: 'filesystem-api' },
+        ],
+      },
+      {
         type: 'checkbox',
         name: 'options',
         message: 'What options do you like?',
+        when: (options) =>
+          options.exampleScopeFolder === 'solutions' ||
+          (options.exampleScopeFolder === 'edge-functions' &&
+            options.framework === 'nextjs'),
         choices: [
           {
             name: 'Next.js API Routes - Serverless Functions: Hello world',
@@ -37,7 +51,8 @@ export default function (plop) {
     ],
     actions: (data) => {
       const plopExampleName = transformName(data.name)
-      const plopPath = `${data.exampleScopeFolder}/${plopExampleName}`
+      const frameworkSubdirectory = data.framework ? `/${data.framework}` : ''
+      const plopPath = `${data.exampleScopeFolder}${frameworkSubdirectory}/${plopExampleName}`
 
       const filesToAlwaysCopyOver = [
         'README.md',
@@ -60,7 +75,7 @@ export default function (plop) {
       filesToAlwaysCopyOver.forEach((file) => {
         actions.push({
           type: 'add',
-          path: `{{exampleScopeFolder}}/${plopExampleName}/${file}`,
+          path: `{{exampleScopeFolder}}${frameworkSubdirectory}/${plopExampleName}/${file}`,
           templateFile: `plop-templates/example/${file}`,
         })
       })
@@ -68,29 +83,29 @@ export default function (plop) {
       // modify _app.tsx
       actions.push({
         type: 'modify',
-        path: `{{exampleScopeFolder}}/${plopExampleName}/pages/_app.tsx`,
+        path: `{{exampleScopeFolder}}${frameworkSubdirectory}/${plopExampleName}/pages/_app.tsx`,
         pattern: /(-- PLOP PATH HERE --)/gi,
         template: `${plopPath}`,
       })
       actions.push({
         type: 'modify',
-        path: `{{exampleScopeFolder}}/${plopExampleName}/pages/_app.tsx`,
+        path: `{{exampleScopeFolder}}${frameworkSubdirectory}/${plopExampleName}/pages/_app.tsx`,
         pattern: /(-- PLOP TITLE HERE --)/gi,
         template: `${data.name}`,
       })
 
-      if (data.options.includes('next-api-pages')) {
+      if (data.options && data.options.includes('next-api-pages')) {
         actions.push({
           type: 'add',
-          path: `{{exampleScopeFolder}}/${plopExampleName}/pages/api/hello.ts`,
+          path: `{{exampleScopeFolder}}${frameworkSubdirectory}/${plopExampleName}/pages/api/hello.ts`,
           templateFile: `plop-templates/example/pages/api/hello.ts`,
         })
       }
 
-      if (data.options.includes('middleware')) {
+      if (data.options && data.options.includes('middleware')) {
         actions.push({
           type: 'add',
-          path: `{{exampleScopeFolder}}/${plopExampleName}/pages/_middleware.ts`,
+          path: `{{exampleScopeFolder}}${frameworkSubdirectory}/${plopExampleName}/pages/_middleware.ts`,
           templateFile: `plop-templates/example/pages/_middleware.ts`,
         })
       }
@@ -100,26 +115,26 @@ export default function (plop) {
         // README.md
         {
           type: 'modify',
-          path: `{{exampleScopeFolder}}/${plopExampleName}/README.md`,
+          path: `{{exampleScopeFolder}}${frameworkSubdirectory}/${plopExampleName}/README.md`,
           pattern: /(-- PLOP TITLE HERE --)/gi,
           template: `${data.name}`,
         },
         {
           type: 'modify',
-          path: `{{exampleScopeFolder}}/${plopExampleName}/README.md`,
+          path: `{{exampleScopeFolder}}${frameworkSubdirectory}/${plopExampleName}/README.md`,
           pattern: /(-- PLOP EXAMPLE NAME HERE --)/gi,
           template: `${plopExampleName}`,
         },
         {
           type: 'modify',
-          path: `{{exampleScopeFolder}}/${plopExampleName}/README.md`,
+          path: `{{exampleScopeFolder}}${frameworkSubdirectory}/${plopExampleName}/README.md`,
           pattern: /(-- PLOP PATH HERE --)/gi,
           template: `${plopPath}`,
         },
         // package.json
         {
           type: 'modify',
-          path: `{{exampleScopeFolder}}/${plopExampleName}/package.json`,
+          path: `{{exampleScopeFolder}}${frameworkSubdirectory}/${plopExampleName}/package.json`,
           pattern: /(-- PLOP EXAMPLE NAME HERE --)/gi,
           template: `${plopExampleName}`,
         },
@@ -127,7 +142,7 @@ export default function (plop) {
         // pages/index.tsx
         {
           type: 'modify',
-          path: `{{exampleScopeFolder}}/${plopExampleName}/pages/index.tsx`,
+          path: `{{exampleScopeFolder}}${frameworkSubdirectory}/${plopExampleName}/pages/index.tsx`,
           pattern: /(-- PLOP TITLE HERE --)/gi,
           template: `${data.name}`,
         },
